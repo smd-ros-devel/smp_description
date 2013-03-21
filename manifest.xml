@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/smp_description</url>
   <depend package="xacro"/>
+  <depend package="urdf"/>
 
 </package>
 
