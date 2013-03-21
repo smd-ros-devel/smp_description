@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" name="smp_mecanum">
+    <include filename="$(find smp_description)/urdf/smp.urdf.xacro" />
+
+    <!--Wheel distatnces -->
+    <xacro:property name="wheelWidth" value="0.08255"/>
+    <xacro:property name="wheelDiam" value="0.2032"/>
+    <xacro:property name="shaftOffset" value="0.05"/><!--This is just to make it look pretty-->
+    <xacro:property name="shaftLength" value="0.15"/>
+    <!--Distance between front and rear wheels-->
+    <property name="wheelBase" value="0.4445"/>
+    <!--Distance between left and right wheels-->
+    <property name="wheelTrack" value="0.5969"/>
+    <!--<property name="heightFromGround" value="0.202"/>-->
+    <!--<property name="heightFromGround" value="0.216"/>-->
+    <!--<property name="heightFromGround" value="0.26035"/>-->
+
+
+    <smp_base/>
+
+    
+
+</robot>

@@ -1,0 +1,364 @@
+<?xml version="1.0"?>
+
+<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+    xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" name="baby_smp">
+
+    <include filename="$(find smp_description)/urdf/hokuyo_laser.urdf.xacro" />
+    <include filename="$(find smp_description)/urdf/xtion_pro.urdf.xacro" />
+
+    <material name="silver">
+	<color rgba="0.3 0.3 0.3 1"/>
+    </material>
+    <material name="green">
+	<color rgba="0.0 0.8 0.0 1.0" />
+    </material>
+    <material name="black">
+	<color rgba="0.1 0.1 0.1 1"/>
+    </material>
+
+
+
+    <xacro:property name="M_PER_IN" value="0.0254" />
+    <xacro:property name="SQRT_2" value="1.414213562373" />
+
+    <!--Wheel distatnces -->
+    <!--<xacro:property name="wheelWidth" value="0.06"/>-->
+    <!--<xacro:property name="wheelDiam" value="0.24"/>-->
+    <!--<xacro:property name="shaftOffset" value="0.05"/>--><!--This is just to make it look pretty-->
+    <!--<xacro:property name="shaftLength" value="0.15"/>-->
+    <!--Distance between front and rear wheels-->
+    <!--<property name="wheelBase" value="0.4445"/>-->
+    <!--Distance between left and right wheels-->
+    <!--<property name="wheelTrack" value="0.5461"/>-->
+    <!--<property name="heightFromGround" value="0.202"/>-->
+    <!--<property name="heightFromGround" value="0.2413"/>-->
+    
+
+    <!--Main body-->
+    <xacro:property name="baseLength" value="0.3048"/>
+    <xacro:property name="baseWidth" value="0.1397"/>
+    <xacro:property name="baseHeight" value="0.09525"/>
+    <xacro:property name="shaftFromBase" value="0.161925"/>
+
+    <!--The computer (i.e. Brains)-->
+    <property name="skullLength" value="0.2159" />
+    <property name="skullWidth" value="0.1905" />
+    <property name="skullHeight" value="0.0635" />
+
+    <!--The Thighs & Legs-->
+    <xacro:property name="thighLength" value="0.305" />
+    <xacro:property name="thighWidth" value="0.032" />
+    <xacro:property name="legLength" value="0.083" />
+
+    <!--Motor Box-->
+    <xacro:property name="motorBoxLength" value="0.057" />
+    <xacro:property name="motorBoxWidth" value="0.18" />
+    <xacro:property name="motorBoxHeight" value="0.05" />
+
+
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0"
+                iyy="1.0" iyz="0.0"
+                izz="1.0" />
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="thigh" params="prefix reflect">
+        <link name="${prefix}_thigh">
+            <visual>
+                <geometry>
+                    <box size="0.28 0.032 0.032"/>
+                </geometry>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <material name="black"/>
+            </visual>
+        </link>
+
+        <joint name="hips_to_${prefix}_thigh" type="fixed">
+            <parent link="hips"/>
+            <child link="${prefix}_thigh"/>
+            <axis xyz="0 1 0"/>
+            <origin xyz="0 ${reflect*0.12135} -0.04445"/>
+            <limit effort="100" velocity="100"/>
+            <joint_properties damping="0.0" friction="0.0"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="leg" params="xfix yfix xreflect yreflect">
+        <link name="${xfix}_${yfix}_leg">
+            <visual>
+                <geometry>
+                    <box size="0.08 0.032 0.032"/>
+                </geometry>
+                <origin rpy="0 ${xreflect*0.785398163} 0" xyz="0 0 0"/>
+                <material name="black"/>
+            </visual>
+        </link>
+
+        <joint name="${yfix}_thigh_to_${xfix}_${yfix}_leg" type="fixed">
+            <parent link="${yfix}_thigh"/>
+            <child link="${xfix}_${yfix}_leg"/>
+            <origin xyz="${xreflect*((thighLength/2) + legLength/(2*SQRT_2) - thighWidth/(2*SQRT_2))} 0 ${-(legLength/(2*SQRT_2))}"/>
+        </joint>
+
+        <link name="${xfix}_${yfix}_motor">
+            <visual>
+                <geometry>
+                    <box size="${motorBoxLength} ${motorBoxWidth} ${motorBoxHeight}"/>
+                </geometry>
+                <origin rpy="0 ${yreflect*0.785398163} 0" xyz="0 ${yreflect*(-0.025)} 0"/>
+                <material name="silver"/>
+            </visual>
+        </link>
+
+        <joint name="${xfix}_${yfix}_leg_to_${xfix}_${yfix}_motor" type="fixed">
+            <parent link="${xfix}_${yfix}_leg"/>
+            <child link="${xfix}_${yfix}_motor"/>
+            <origin xyz="${xreflect*(legLength/(2*SQRT_2) + motorBoxLength/(2*SQRT_2) - thighWidth/(2*SQRT_2))} 0 ${-(legLength/(2*SQRT_2) + motorBoxHeight/(2) - thighWidth/(2*SQRT_2))}"/> 
+        </joint>
+
+        <link name="${xfix}_${yfix}_shaft">
+            <visual>
+                <geometry>
+                    <cylinder length="${shaftLength}" radius="0.012"/>
+                </geometry>
+                <origin rpy="${xreflect*1.57075} ${yreflect*1.57075} 0" xyz="0 0 0"/>
+                <material name="silver"/>
+            </visual>
+        </link>
+
+    <joint name="base_link_to_${xfix}_${yfix}_shaft" type="fixed">
+        <parent link="base_link"/>
+        <child link="${xfix}_${yfix}_shaft"/>
+        <!--Bring in the shaft a little with the shaftOffset this will need to be pushed back when connectiong wheel to shaft-->
+        <!--<origin xyz="${xreflect*(wheelBase/2)} ${yreflect*(wheelTrack/2 - shaftOffset)} ${-(0.2413+(baseHeight/2) - (wheelDiam/2))}"/>-->
+        <origin xyz="${xreflect*(wheelBase/2)} ${yreflect*(wheelTrack/2 - shaftOffset)} ${-(shaftFromBase)}"/>
+    </joint>
+    </xacro:macro>
+
+    <xacro:macro name="wheel" params="xfix yfix xreflect yreflect">
+        <link name="${xfix}_${yfix}_wheel">
+            <visual>
+                <geometry>
+                    <cylinder length="${wheelWidth}" radius="${wheelDiam/2}"/>
+                </geometry>
+                <origin rpy="${yreflect*1.57075} ${xreflect*1.57075} 0" xyz="0 0 0"/>
+                <!--<material name="silver"/>-->
+		<material name="black" />
+            </visual>
+        </link>
+
+        <joint name="${xfix}_${yfix}_shaft_to_${xfix}_${yfix}_wheel" type="continuous">
+            <parent link="${xfix}_${yfix}_shaft"/>
+            <child link="${xfix}_${yfix}_wheel"/>
+            <origin xyz="0 ${yreflect*(shaftOffset)} 0"/>
+            <axis xyz="0 1 0"/>
+            <limit effort="100" velocity="100"/>
+            <joint_properties damping="0.0" friction="0.0"/>
+        </joint>
+    </xacro:macro>
+
+
+
+
+    <xacro:macro name="smp_base">
+
+    <!-- BASE LASER ATTACHMENT -->
+    <hokuyo_laser parent="lidar_plate">
+        <origin xyz="0.045 0 0.02"/><!--This is the origin of the joint lidar_plate_to_laser -->
+    </hokuyo_laser>
+
+    <!-- BASE ASUS RGBD -->
+    <xtion_pro parent="base_link">
+        <origin xyz="${baseLength/2} 0 ${baseHeight}"/><!--This is the origin of the joint lidar_plate_to_laser -->
+    </xtion_pro>
+
+    <!-- base_footprint is a fictitious link(frame) that is on the ground 
+    right below base_link origin - the navigation stack depends on this frame -->
+    <link name="base_footprint">
+        <inertial>
+            <mass value="0.0001" />
+            <origin xyz="0 0 0" />
+            <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                iyy="0.0001" iyz="0.0"
+                izz="0.0001" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.001 0.001 0.001" />
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.017" rpy="0 0 0" />
+            <geometry>
+                <box size="0.001 0.001 0.001" />
+            </geometry>
+        </collision>
+    </link>
+
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="${baseLength} ${baseWidth} ${baseHeight}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+
+    <joint name="base_footprint_joint" type="fixed">
+      <origin xyz="0 0 ${shaftFromBase + wheelDiam/2}" rpy="0 0 0"/>
+      <parent link="base_footprint" />
+      <child link="base_link" />
+    </joint>
+
+
+    <link name="imu">
+        <visual>
+            <geometry>
+                <box size="0.04724 0.0725 0.0508"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 -0.0313"/>
+            <material name="silver"/>
+        </visual>
+    </link>
+
+
+    <joint name="base_link_to_imu" type="fixed">
+        <parent link="base_link"/>
+        <child link="imu"/>
+        <origin xyz="0 0 -0.0313"/>
+    </joint>
+
+    <link name="hips">
+        <visual>
+            <geometry>
+                <cylinder length="0.28" radius="0.01288"/>
+            </geometry>
+            <origin rpy="1.57075 1.57075 0" xyz="0 0 -0.04445"/>
+            <material name="silver"/>
+        </visual>
+    </link>
+
+    <joint name="imu_to_hips" type="fixed">
+        <parent link="imu"/>
+        <child link="hips"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+
+
+
+
+
+    <xacro:thigh prefix="left" reflect="1" />
+    <xacro:thigh prefix="right" reflect="-1" />
+
+<!--Custome made ASUS sensor-->
+<!--
+    <link name="nose">
+        <visual>
+            <geometry>
+                <cylinder length="0.018" radius="0.015"/>
+            </geometry>
+            <origin rpy="1.570796326795 1.570796326795 0" xyz="0 0 0"/>
+            <material name="black"/>
+        </visual>
+    </link>
+
+    <joint name="base_link_to_nose" type="fixed">
+        <parent link="base_link"/>
+        <child link="nose"/>
+        <origin xyz="0.1324 0 0.0463"/>
+    </joint>
+
+
+    <link name="rgbd">
+        <visual>
+            <geometry>
+                <box size="0.036 0.1778 0.025"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0.0275"/>
+            <material name="black"/>
+        </visual>
+    </link>
+
+    <joint name="nose_to_rgbd" type="revolute">
+        <parent link="nose"/>
+        <child link="rgbd"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+-->
+
+
+    <link name="lidar_plate">
+        <visual>
+            <geometry>
+                <box size="0.075 0.06 0.0035"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0.0375 0 0"/>
+            <material name="silver"/>
+        </visual>
+    </link>
+
+    <joint name="base_to_lidar_plate" type="fixed">
+        <parent link="base_link"/>
+        <child link="lidar_plate"/>
+        <origin xyz="0.1524 0 -0.0313"/>
+    </joint>
+
+    <link name="laser">
+        <visual>
+            <geometry>
+                <box size="0.05 0.05 0.04"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="silver"/>
+        </visual>
+    </link>
+
+    <joint name="lidar_plate_to_laser" type="fixed">
+        <parent link="lidar_plate"/>
+        <child link="laser"/>
+        <!--<origin xyz="0.045 0 0.02"/>-->
+        <origin xyz="0.045 0 0.02"/>
+    </joint>
+
+    <link name="skull">
+        <visual>
+            <geometry>
+                <box size="${skullLength} ${skullWidth} ${skullHeight}"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="black"/>
+        </visual>
+    </link>
+
+    <joint name="skull_to_base" type="fixed">
+        <parent link="base_link"/>
+        <child link="skull"/>
+        <origin xyz="${(skullLength-baseLength)/2} 0 ${(baseHeight/2) + 0.0508}"/>
+    </joint>
+
+
+    <xacro:leg xfix="front" yfix="left" xreflect="1" yreflect="1" />
+    <xacro:leg xfix="front" yfix="right" xreflect="1" yreflect="-1" />
+    <xacro:leg xfix="rear" yfix="left" xreflect="-1" yreflect="1" />
+    <xacro:leg xfix="rear" yfix="right" xreflect="-1" yreflect="-1" />
+
+
+    <xacro:wheel xfix="front" yfix="left" xreflect="1" yreflect="1" />
+    <xacro:wheel xfix="front" yfix="right" xreflect="1" yreflect="-1" />
+    <xacro:wheel xfix="rear" yfix="left" xreflect="-1" yreflect="1" />
+    <xacro:wheel xfix="rear" yfix="right" xreflect="-1" yreflect="-1" />
+
+    </xacro:macro>
+
+</robot>
