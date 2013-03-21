@@ -11,12 +11,8 @@
     <property name="wheelBase" value="0.4445"/>
     <!--Distance between left and right wheels-->
     <property name="wheelTrack" value="0.5461"/>
-    <!--<property name="heightFromGround" value="0.202"/>-->
-    <!--<property name="heightFromGround" value="0.71755"/>-->
 
+    <xacro:property name="wheelColor" value="black"/>
 
     <smp_base/>
-
-    
-
 </robot>

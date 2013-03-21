@@ -147,8 +147,7 @@
                     <cylinder length="${wheelWidth}" radius="${wheelDiam/2}"/>
                 </geometry>
                 <origin rpy="${yreflect*1.57075} ${xreflect*1.57075} 0" xyz="0 0 0"/>
-                <!--<material name="silver"/>-->
-		<material name="black" />
+		<material name="${wheelColor}" />
             </visual>
         </link>
 
