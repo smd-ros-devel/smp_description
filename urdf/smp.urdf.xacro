@@ -151,7 +151,7 @@
             </visual>
         </link>
 
-        <joint name="${xfix}_${yfix}_wheel_joint" type="continuous">
+        <joint name="wheel_${xfix}_${yfix}_joint" type="continuous">
             <parent link="${xfix}_${yfix}_shaft"/>
             <child link="${xfix}_${yfix}_wheel"/>
             <origin xyz="0 ${yreflect*(shaftOffset)} 0"/>
