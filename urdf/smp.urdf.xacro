@@ -151,7 +151,7 @@
             </visual>
         </link>
 
-        <joint name="${xfix}_${yfix}_shaft_to_${xfix}_${yfix}_wheel" type="continuous">
+        <joint name="${xfix}_${yfix}_wheel_joint" type="continuous">
             <parent link="${xfix}_${yfix}_shaft"/>
             <child link="${xfix}_${yfix}_wheel"/>
             <origin xyz="0 ${yreflect*(shaftOffset)} 0"/>
@@ -349,14 +349,14 @@
 
     <xacro:leg xfix="front" yfix="left" xreflect="1" yreflect="1" />
     <xacro:leg xfix="front" yfix="right" xreflect="1" yreflect="-1" />
-    <xacro:leg xfix="rear" yfix="left" xreflect="-1" yreflect="1" />
-    <xacro:leg xfix="rear" yfix="right" xreflect="-1" yreflect="-1" />
+    <xacro:leg xfix="back" yfix="left" xreflect="-1" yreflect="1" />
+    <xacro:leg xfix="back" yfix="right" xreflect="-1" yreflect="-1" />
 
 
     <xacro:wheel xfix="front" yfix="left" xreflect="1" yreflect="1" />
     <xacro:wheel xfix="front" yfix="right" xreflect="1" yreflect="-1" />
-    <xacro:wheel xfix="rear" yfix="left" xreflect="-1" yreflect="1" />
-    <xacro:wheel xfix="rear" yfix="right" xreflect="-1" yreflect="-1" />
+    <xacro:wheel xfix="back" yfix="left" xreflect="-1" yreflect="1" />
+    <xacro:wheel xfix="back" yfix="right" xreflect="-1" yreflect="-1" />
 
     </xacro:macro>
 
